@@ -1,0 +1,231 @@
+// Prisma schema for on-chain game engine
+// learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Player Management
+// ============================================================================
+
+/// Player account with Identity NFT
+model Player {
+  id              String   @id @default(cuid())
+
+  // Wallet information
+  wallet_address  String   @unique              // Cardano wallet address
+  stake_address   String?                       // Stake address (optional)
+
+  // Identity NFT
+  nft_policy_id   String                        // Identity NFT policy ID
+  nft_asset_name  String                        // Identity NFT asset name (hex)
+  nft_tx_hash     String?                       // Transaction that minted the NFT
+
+  // Current stats (cached from last session)
+  current_hp          Int      @default(100)
+  current_exp         Int      @default(0)
+  current_agility     Int      @default(10)
+  current_strength    Int      @default(10)
+  current_intelligence Int     @default(10)
+  current_speed       Int      @default(10)
+
+  // Session tracking
+  current_session_id  Int      @default(0)       // Increments with each finalized session
+  total_sessions      Int      @default(0)       // Total sessions played
+
+  // Script address (where NFT is locked during gameplay)
+  script_address      String?
+
+  // Status
+  is_active           Boolean  @default(true)
+  is_playing          Boolean  @default(false)  // Currently in game session
+
+  // Timestamps
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+  last_played_at      DateTime?
+
+  // Relations
+  sessions            GameSession[]
+  transactions        GameTransaction[]
+  stat_history        PlayerStatsHistory[]
+
+  @@unique([nft_policy_id, nft_asset_name])
+  @@index([wallet_address])
+  @@index([is_playing])
+}
+
+// ============================================================================
+// Game Sessions
+// ============================================================================
+
+enum GameSessionStatus {
+  ACTIVE      // Currently playing
+  FINALIZING  // Awaiting finalization transaction
+  COMPLETED   // Successfully finalized
+  ABANDONED   // Player abandoned (timeout)
+  FAILED      // Finalization failed
+}
+
+/// Game session tracking
+model GameSession {
+  id              String   @id @default(cuid())
+
+  // Player relationship
+  player_id       String
+  player          Player   @relation(fields: [player_id], references: [id])
+
+  // Session info
+  session_number  Int                           // Sequential session number for this player
+  status          GameSessionStatus @default(ACTIVE)
+
+  // Stats at session start
+  start_hp          Int
+  start_exp         Int
+  start_agility     Int
+  start_strength    Int
+  start_intelligence Int
+  start_speed       Int
+
+  // Stats at session end (when finalized)
+  end_hp            Int?
+  end_exp           Int?
+  end_agility       Int?
+  end_strength      Int?
+  end_intelligence  Int?
+  end_speed         Int?
+
+  // Signature data (when finalized)
+  final_signature   String?                     // Ed25519 signature (hex)
+  final_message     String?                     // Message that was signed (hex)
+
+  // Timestamps
+  started_at        DateTime @default(now())
+  finalized_at      DateTime?
+
+  // Blockchain link
+  start_tx_id       String?                     // Transaction that started session
+  finalize_tx_id    String?                     // Transaction that finalized session
+
+  // Relations
+  transactions      GameTransaction[]
+
+  @@index([player_id])
+  @@index([status])
+  @@index([started_at])
+}
+
+// ============================================================================
+// Blockchain Transactions
+// ============================================================================
+
+enum GameTransactionStatus {
+  PENDING       // Submitted to mempool
+  CONFIRMED     // Confirmed on-chain
+  FAILED        // Transaction failed
+  RETRYING      // Will retry
+}
+
+enum GameTransactionType {
+  MINT_NFT      // Mint Identity NFT
+  START_SESSION // Start game session (Play redeemer)
+  UPDATE_STATS  // Update stats during session (Update redeemer)
+  FINALIZE      // Finalize session (Finalize redeemer)
+  WITHDRAW      // Withdraw NFT to wallet
+}
+
+/// Blockchain transaction history
+model GameTransaction {
+  id              String   @id @default(cuid())
+
+  // Player relationship
+  player_id       String
+  player          Player   @relation(fields: [player_id], references: [id])
+
+  // Session relationship (optional)
+  session_id      String?
+  session         GameSession? @relation(fields: [session_id], references: [id])
+
+  // Transaction details
+  type            GameTransactionType
+  status          GameTransactionStatus @default(PENDING)
+
+  // Cardano transaction
+  tx_hash         String?  @unique               // Transaction hash
+  tx_cbor         String?                        // Signed CBOR (for resubmit)
+
+  // Status tracking
+  status_message  String?                        // Error/status details
+
+  // Timestamps
+  submitted_at    DateTime @default(now())
+  confirmed_at    DateTime?
+  last_checked_at DateTime?
+
+  // Blockchain data (after confirmation)
+  block_height    Int?
+  block_time      DateTime?
+  slot            Int?
+
+  // NFT info
+  nft_policy_id   String
+  nft_asset_name  String
+
+  // UTXO info (for chaining transactions)
+  utxo_tx_hash    String?
+  utxo_index      Int?
+
+  // Datum (on-chain data)
+  datum_json      Json?
+
+  // Retry logic
+  retry_count     Int      @default(0)
+  max_retries     Int      @default(3)
+  next_retry_at   DateTime?
+
+  @@index([player_id])
+  @@index([session_id])
+  @@index([status])
+  @@index([type])
+  @@index([submitted_at])
+  @@index([tx_hash])
+}
+
+// ============================================================================
+// Stats History (Analytics)
+// ============================================================================
+
+/// Historical snapshots of player stats
+/// Used for analytics and tracking progression
+model PlayerStatsHistory {
+  id              String   @id @default(cuid())
+
+  // Player relationship
+  player_id       String
+  player          Player   @relation(fields: [player_id], references: [id])
+
+  // Stats snapshot
+  hp              Int
+  exp             Int
+  agility         Int
+  strength        Int
+  intelligence    Int
+  speed           Int
+
+  // Context
+  session_number  Int                           // Which session these stats are from
+  event_type      String                        // "session_start", "session_end", "update"
+
+  // Timestamp
+  recorded_at     DateTime @default(now())
+
+  @@index([player_id])
+  @@index([session_number])
+  @@index([recorded_at])
+}
