@@ -14,9 +14,7 @@
     "db:studio": "prisma studio",
     "game:mint-nft": "tsx offchain/transactions/mint_identity_nft.ts",
     "game:create-player": "tsx offchain/transactions/create_player.ts",
-    "game:start-session": "tsx offchain/transactions/start_game_session.ts",
-    "game:update-stats": "tsx offchain/transactions/update_player_stats.ts",
-    "game:finalize": "tsx offchain/transactions/finalize_session.ts",
+    "demo:full-flow": "tsx scripts/demo_full_flow.ts",
     "wallet:balance": "tsx offchain/transactions/check_wallet_balance.ts",
     "lucid:generate-wallet": "tsx offchain/transactions/utils/generate_lucid_wallet.ts",
     "test:validator": "cd onchain/game-engine && aiken check",
@@ -31,6 +29,7 @@
   "dependencies": {
     "@lucid-evolution/lucid": "^0.4.29",
     "@prisma/client": "^5.22.0",
+    "axios": "^1.6.5",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
