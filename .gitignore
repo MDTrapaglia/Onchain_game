@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Aiken build artifacts
+onchain/**/build/
+onchain/**/plutus.json
+onchain/**/*.lock
+
+# Database
+*.db
+*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Development notes (temp folder for progress tracking)
+temp/
+
+# Test artifacts
+coverage/
+.nyc_output/

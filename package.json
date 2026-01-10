@@ -1,0 +1,58 @@
+{
+  "name": "onchain-game",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch offchain/backend/api_server.ts",
+    "build:backend": "tsc --project tsconfig.json --outDir dist",
+    "lint:backend": "eslint offchain/backend/**/*.ts offchain/transactions/**/*.ts --no-warn-ignored",
+    "lint:fix": "eslint offchain/backend/**/*.ts offchain/transactions/**/*.ts --fix --no-warn-ignored",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "game:mint-nft": "tsx offchain/transactions/mint_identity_nft.ts",
+    "game:create-player": "tsx offchain/transactions/create_player.ts",
+    "game:start-session": "tsx offchain/transactions/start_game_session.ts",
+    "game:update-stats": "tsx offchain/transactions/update_player_stats.ts",
+    "game:finalize": "tsx offchain/transactions/finalize_session.ts",
+    "wallet:balance": "tsx offchain/transactions/check_wallet_balance.ts",
+    "lucid:generate-wallet": "tsx offchain/transactions/utils/generate_lucid_wallet.ts",
+    "test:validator": "cd onchain/game-engine && aiken check",
+    "build:validator": "cd onchain/game-engine && aiken build",
+    "setup:collateral": "tsx scripts/setup_collateral.ts",
+    "test": "npm run test:validator"
+  },
+  "keywords": ["cardano", "aiken", "blockchain", "game", "nft", "web3"],
+  "author": "",
+  "license": "Apache-2.0",
+  "description": "On-chain game engine on Cardano using Aiken smart contracts",
+  "dependencies": {
+    "@lucid-evolution/lucid": "^0.4.29",
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "lucid-cardano": "^0.10.11",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "eslint": "^9.39.2",
+    "prisma": "^5.22.0",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "npm": "^11.6.2",
+    "brace-expansion": "^2.0.2",
+    "glob": "^11.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+# Aiken build artifacts
+build/
+plutus.json
+aiken.lock
+
+# Editor
+.vscode/
+.idea/
+*.swp
