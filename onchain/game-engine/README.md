@@ -1,52 +1,65 @@
-# Game Engine Smart Contracts
+# sensors-oracle
 
-On-chain game engine validators written in Aiken for Cardano blockchain.
-
-## Validators
-
-### 1. game.ak
-Main game validator that enforces:
-- Player stat immutability
-- Ed25519 signature verification
-- State transition rules (linaje)
-- Identity NFT ownership
-
-### 2. nft.ak
-Minting policy for Identity NFT:
-- One-time mint per player
-- Unique token name per wallet
-
-## Building
-
-```bash
-cd onchain/game-engine
-aiken build
-```
-
-## Testing
-
-```bash
-aiken check
-```
-
-## Stats Schema
+Write validators in the `validators` folder, and supporting functions in the `lib` folder using `.ak` as a file extension.
 
 ```aiken
-PlayerStats {
-  hp: Int,           // Hit Points
-  exp: Int,          // Experience
-  agility: Int,
-  strength: Int,
-  intelligence: Int,
-  speed: Int
+validator my_first_validator {
+  spend(_datum: Option<Data>, _redeemer: Data, _output_reference: Data, _context: Data) {
+    True
+  }
 }
 ```
 
-## Security Model
+## Building
 
-The game uses Ed25519 signatures to validate stat updates:
-1. Player starts game session (Play redeemer)
-2. Backend tracks gameplay off-chain
-3. Stats update during session (Update redeemer with linaje validation)
-4. Backend signs final stats
-5. Player finalizes session (Finalize redeemer validates signature)
+```sh
+aiken build
+```
+
+## Configuring
+
+**aiken.toml**
+```toml
+[config.default]
+network_id = 41
+```
+
+Or, alternatively, write conditional environment modules under `env`.
+
+## Testing
+
+You can write tests in any module using the `test` keyword. For example:
+
+```aiken
+use config
+
+test foo() {
+  config.network_id + 1 == 42
+}
+```
+
+To run all tests, simply do:
+
+```sh
+aiken check
+```
+
+To run only tests matching the string `foo`, do:
+
+```sh
+aiken check -m foo
+```
+
+## Documentation
+
+If you're writing a library, you might want to generate an HTML documentation for it.
+
+Use:
+
+```sh
+aiken docs
+```
+
+## Resources
+
+Find more on the [Aiken's user manual](https://aiken-lang.org).

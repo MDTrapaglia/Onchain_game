@@ -1,9 +1,6 @@
-# Aiken build artifacts
+# Aiken compilation artifacts
+artifacts/
+# Aiken's project working directory
 build/
-plutus.json
-aiken.lock
-
-# Editor
-.vscode/
-.idea/
-*.swp
+# Aiken's default documentation export
+docs/

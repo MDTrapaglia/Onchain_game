@@ -4,6 +4,7 @@ use aiken/crypto.{VerificationKey, verify_ed25519_signature}
 use cardano/assets.{AssetName, PolicyId, quantity_of}
 use cardano/transaction.{
   DatumHash, InlineDatum, Input, NoDatum, Output, OutputReference, Transaction,
+  find_input,
 }
 
 // ============================================================================
@@ -171,7 +172,7 @@ validator game(params: GameParams) {
     // Get input being spent
     expect Some(game_input) =
       tx.inputs
-        |> transaction.find_input(utxo_ref)
+        |> find_input(utxo_ref)
 
     // Input must contain the Identity NFT
     expect
