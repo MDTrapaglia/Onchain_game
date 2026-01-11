@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   description: "The first fully on-chain RPG game engine on Cardano. Own your character, control your destiny.",
 };
 
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{
