@@ -2,6 +2,7 @@ import { Lucid, Blockfrost, fromText } from '@lucid-evolution/lucid';
 import * as dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { loadWallet } from './utils/wallet_helpers.js';
 
 dotenv.config();
 
@@ -17,9 +18,14 @@ async function main() {
   const network = process.env.CARDANO_NETWORK as 'Mainnet' | 'Preprod' | 'Preview';
   const blockfrostApiKey = process.env.BLOCKFROST_API_KEY;
   const seedPhrase = process.env.WALLET_SEED_PHRASE;
+  const privateKey = process.env.WALLET_PRIVATE_KEY;
 
-  if (!blockfrostApiKey || !seedPhrase) {
-    throw new Error('BLOCKFROST_API_KEY and WALLET_SEED_PHRASE must be set in .env');
+  if (!blockfrostApiKey) {
+    throw new Error('BLOCKFROST_API_KEY must be set in .env');
+  }
+
+  if (!seedPhrase && !privateKey) {
+    throw new Error('Either WALLET_SEED_PHRASE or WALLET_PRIVATE_KEY must be set in .env');
   }
 
   console.log(`🎮 Minting Identity NFT on ${network}\n`);
@@ -33,7 +39,7 @@ async function main() {
     network
   );
 
-  lucid.selectWallet.fromSeed(seedPhrase);
+  loadWallet(lucid, seedPhrase, privateKey);
 
   const address = await lucid.wallet().address();
 

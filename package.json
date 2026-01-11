@@ -22,7 +22,14 @@
     "setup:collateral": "tsx scripts/setup_collateral.ts",
     "test": "npm run test:validator"
   },
-  "keywords": ["cardano", "aiken", "blockchain", "game", "nft", "web3"],
+  "keywords": [
+    "cardano",
+    "aiken",
+    "blockchain",
+    "game",
+    "nft",
+    "web3"
+  ],
   "author": "",
   "license": "Apache-2.0",
   "description": "On-chain game engine on Cardano using Aiken smart contracts",
@@ -34,6 +41,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "libsodium-wrappers-sumo": "^0.8.0",
     "lucid-cardano": "^0.10.11",
     "tweetnacl": "^1.0.3"
   },

@@ -1,5 +1,6 @@
 import { Lucid, Blockfrost } from '@lucid-evolution/lucid';
 import * as dotenv from 'dotenv';
+import { loadWallet } from './utils/wallet_helpers.js';
 
 dotenv.config();
 
@@ -14,13 +15,14 @@ async function main() {
   const network = process.env.CARDANO_NETWORK as 'Mainnet' | 'Preprod' | 'Preview';
   const blockfrostApiKey = process.env.BLOCKFROST_API_KEY;
   const seedPhrase = process.env.WALLET_SEED_PHRASE;
+  const privateKey = process.env.WALLET_PRIVATE_KEY;
 
   if (!blockfrostApiKey) {
     throw new Error('BLOCKFROST_API_KEY not set in .env');
   }
 
-  if (!seedPhrase) {
-    throw new Error('WALLET_SEED_PHRASE not set in .env');
+  if (!seedPhrase && !privateKey) {
+    throw new Error('Either WALLET_SEED_PHRASE or WALLET_PRIVATE_KEY must be set in .env');
   }
 
   console.log(`🔍 Checking wallet balance on ${network}\n`);
@@ -34,8 +36,8 @@ async function main() {
     network
   );
 
-  // Select wallet
-  lucid.selectWallet.fromSeed(seedPhrase);
+  // Select wallet (prefer seed phrase, fallback to private key)
+  loadWallet(lucid, seedPhrase, privateKey);
 
   const address = await lucid.wallet().address();
   const utxos = await lucid.wallet().getUtxos();

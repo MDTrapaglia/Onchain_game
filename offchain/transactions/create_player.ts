@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import axios from 'axios';
+import { loadWallet } from './utils/wallet_helpers.js';
 
 dotenv.config();
 
@@ -22,11 +23,16 @@ async function main() {
   const network = process.env.CARDANO_NETWORK as 'Mainnet' | 'Preprod' | 'Preview';
   const blockfrostApiKey = process.env.BLOCKFROST_API_KEY;
   const seedPhrase = process.env.WALLET_SEED_PHRASE;
+  const privateKey = process.env.WALLET_PRIVATE_KEY;
   const apiUrl = process.env.BACKEND_URL || 'http://localhost:3001';
   const apiToken = process.env.ACCESS_TOKEN;
 
-  if (!blockfrostApiKey || !seedPhrase || !apiToken) {
-    throw new Error('Required env vars: BLOCKFROST_API_KEY, WALLET_SEED_PHRASE, ACCESS_TOKEN');
+  if (!blockfrostApiKey || !apiToken) {
+    throw new Error('Required env vars: BLOCKFROST_API_KEY, ACCESS_TOKEN');
+  }
+
+  if (!seedPhrase && !privateKey) {
+    throw new Error('Either WALLET_SEED_PHRASE or WALLET_PRIVATE_KEY must be set in .env');
   }
 
   console.log(`🎮 Creating player on ${network}\n`);
@@ -40,7 +46,7 @@ async function main() {
     network
   );
 
-  lucid.selectWallet.fromSeed(seedPhrase);
+  loadWallet(lucid, seedPhrase, privateKey);
   const address = await lucid.wallet().address();
 
   console.log(`Player wallet: ${address}\n`);
