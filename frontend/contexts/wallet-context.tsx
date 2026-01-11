@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { Lucid, Blockfrost, LucidEvolution } from "@lucid-evolution/lucid"
+import type { LucidEvolution } from "@lucid-evolution/lucid"
 
 interface WalletContextType {
   lucid: LucidEvolution | null
@@ -25,6 +25,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       const network = "Preprod"
       const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY || ""
+
+      // Dynamically import Lucid only on client side
+      const { Lucid, Blockfrost } = await import("@lucid-evolution/lucid")
 
       const lucidInstance = await Lucid(
         new Blockfrost(
