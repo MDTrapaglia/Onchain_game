@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { StatBar } from "@/components/stat-bar"
 import { Heart, Zap, Sword, Brain, Wind, Target, Play, Square, Loader2 } from "lucide-react"
 import axios from "axios"
+import { useRouter } from "next/navigation"
 
 interface PlayerStats {
   hp: number
@@ -40,13 +41,15 @@ interface GameSession {
 
 export function PlayerDashboard() {
   const { address } = useWallet()
+  const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [activeSession, setActiveSession] = useState<GameSession | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001"
+  const defaultApiUrl = process.env.NODE_ENV === "production" ? "/game" : "http://localhost:3001"
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || defaultApiUrl
   const apiToken = process.env.NEXT_PUBLIC_ACCESS_TOKEN || "gaelito2025"
 
   useEffect(() => {
@@ -164,7 +167,7 @@ export function PlayerDashboard() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-slate-400 mb-4">{error}</p>
-          <Button onClick={() => window.location.href = "/register"} className="w-full">
+          <Button onClick={() => router.push("/register")} className="w-full">
             Register Now
           </Button>
         </CardContent>
