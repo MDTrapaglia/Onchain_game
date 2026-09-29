@@ -1,0 +1,42 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export enum Phase { OPEN, RESOLVED }
+export enum Outcome { PENDING, SURVIVED, VICTORY, DEFEAT }
+
+export ledger heroHp: Uint<8>;
+export ledger monsterHp: Uint<8>;
+export ledger phase: Phase;
+export ledger outcome: Outcome;
+
+constructor() {
+  heroHp = 10;
+  monsterHp = 7;
+  phase = Phase.OPEN;
+  outcome = Outcome.PENDING;
+}
+
+// 0 = golpe, 1 = bloqueo, 2 = hechizo. Lo aporta el estado privado local.
+// El witness no es de confianza: resolve comprueba su rango.
+witness localAction(): Uint<8>;
+
+export circuit resolve(): [] {
+  assert(phase == Phase.OPEN, "Encounter already resolved");
+  const action = localAction();
+  assert(action < 3, "Invalid action");
+
+  const damage: Uint<8> = action == 0 ? 4 : action == 1 ? 1 : 7;
+  // Valores iniciales fijos y una sola resolución garantizan que no hay underflow.
+  const newMonster: Uint<8> = monsterHp - damage;
+  const recoil: Uint<8> = action == 2 ? 2 : 0;
+  const afterRecoil: Uint<8> = heroHp - recoil;
+  const retaliation: Uint<8> = newMonster == 0 ? 0 : action == 1 ? 1 : 3;
+  const newHero: Uint<8> = afterRecoil - retaliation;
+
+  monsterHp = disclose(newMonster);
+  heroHp = disclose(newHero);
+  outcome = disclose(newMonster == 0 ? Outcome.VICTORY :
+                     newHero == 0 ? Outcome.DEFEAT : Outcome.SURVIVED);
+  phase = Phase.RESOLVED;
+}
